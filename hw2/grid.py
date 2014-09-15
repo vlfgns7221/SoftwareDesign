@@ -34,9 +34,19 @@ def firstrow():
     do_twice(mi)
     ent()
     
+def firstrow2():
+    pl()
+    do_four(mi)
+    ent()
+    
 def middlerow():
     bar()
     do_twice(sp)
+    ent()
+
+def middlerow2():
+    bar()
+    do_four(sp)
     ent()
     
 def grid():
@@ -45,6 +55,13 @@ def grid():
     firstrow()
     do_four(middlerow)
     firstrow()
+
+def gridd2():
+    firstrow2()
+    do_four(middlerow2)
     
+def grid2():
+    do_four(gridd2)
+    firstrow2()    
     
-grid()
+grid2()
