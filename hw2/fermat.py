@@ -23,7 +23,7 @@ def check_fermat(a,b,c,n):
     elif d == e:
         print 'Holy smokes, Fermat was wrong';
     else:
-        print 'No, that doesn''t work';
+        print "No, that doesn't work";
         
 def inputt():
     a=raw_input('enter a(it must be integer) : ');
