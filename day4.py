@@ -23,14 +23,14 @@ def is_between(x,y,z):
         return False;
         
 def random_float(start, stop):
-    a=random.uniform(start, stop);
+    a=random.randint(start, stop);
     return a;
     
     
 def factorial(n):
     m=1;
     for i in range(n):
-        m=m*(i+1);
+        m=m * (i+1);
     return m;
 
 def sum_integers(x,y):
@@ -57,7 +57,6 @@ def approximate_e(n,x,p):
     for i in range(n):
         getcontext().prec = p;
         m=m+Decimal(x**i)/Decimal(factorial(i));
-    
     return m;
 
 def main():
@@ -70,11 +69,12 @@ def main():
     k6=sum_integers(3,7);
     k7=is_prime(101);
     k8=is_palindrome('status');
-    k9=approximate_e(1000,1,40); 
+    k9=approximate_e(1000,1,50); 
     """approximate_e(n,x,p) n: number of operation for Talyor series
                             x: e^x
                             p: decimal palces
     """
-    print k1, k2, k3, k4, k5, k6, k7, k8, k9;
+    print k1, k2, k3, k4, k5, k6, k7, k8;
+    print k9;
 
 main()

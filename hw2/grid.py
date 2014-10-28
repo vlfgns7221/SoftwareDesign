@@ -63,5 +63,6 @@ def gridd2():
 def grid2():
     do_four(gridd2)
     firstrow2()    
-    
+
+grid()    
 grid2()

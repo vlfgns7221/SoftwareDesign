@@ -111,7 +111,7 @@ def RGBcolor(red_eq,blue_eq,green_eq,pixel):
     return Image.merge("RGB", (red, green, blue))
 
 def draw(pixel):
-    for i in range(3,10):
+    for i in range(0,10):
         red_eq=build_random_function(3,4);
         blue_eq=build_random_function(3,5);
         green_eq=build_random_function(3,6);
