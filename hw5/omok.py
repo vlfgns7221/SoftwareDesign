@@ -233,7 +233,7 @@ def main():
                             check_run_starter= False
                         if event.type == MOUSEBUTTONUP:
                             if startbuttonchecker.play_restart_button(event): # check if restart button pressed
-                                stone_color=controller.handle_mouse_event(event,turn,stone_color# check if board clicked(stone put)             
+                                stone_color=controller.handle_mouse_event(event,turn,stone_color)# check if board clicked(stone put)             
                 time.sleep(.001)
     
 
