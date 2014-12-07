@@ -21,7 +21,7 @@ import math
 
 class Server_call:
     def __init__(self):
-        self.IP = "10.7.24.154"
+        self.IP = "10.7.88.31"
         self.conn = httplib.HTTPConnection(self.IP,9000)
         self.headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
         
@@ -81,7 +81,7 @@ class Server_call:
         params = urllib.urlencode({'game_id': game_id})
         self.conn.request("POST", "/closegame", params, self.headers)
                
-""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""    
 """""""""""""""   Tank   model   """""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""
 
@@ -129,22 +129,22 @@ class  PyGameWindowView:
         img_tank21 = pygame.image.load('tank21.png')
         img_tank22 = pygame.image.load('tank22.png')
         if model.tank1.canon_direction == 0:
-            screen.blit(img_tank11,(model.tank1.x, model.tank1.y))
+            screen.blit(img_tank11,(model.tank1.x-5, model.tank1.y))
         elif model.tank1.canon_direction == 1:
-            screen.blit(img_tank12,(model.tank1.x, model.tank1.y))
+            screen.blit(img_tank12,(model.tank1.x-5, model.tank1.y))
        
         if model.tank2.canon_direction == 0:
-            screen.blit(img_tank21,(model.tank2.x, model.tank2.y))
+            screen.blit(img_tank21,(model.tank2.x-5, model.tank2.y))
         elif model.tank2.canon_direction == 1:
-            screen.blit(img_tank22,(model.tank2.x, model.tank2.y))
+            screen.blit(img_tank22,(model.tank2.x-5, model.tank2.y))
         pygame.display.update()
 
     def draw_angle(self,model,screen,user_turn):
         if user_turn == 1: 
-            pos_tank=(model.tank1.x+50,model.tank1.y+30)
+            pos_tank=(model.tank1.x+25,model.tank1.y+30)
             angle=model.tank1.canon_angle
         elif user_turn == 2:
-            pos_tank=(model.tank2.x+50,model.tank2.y+30)
+            pos_tank=(model.tank2.x+25,model.tank2.y+30)
             angle=model.tank2.canon_angle            
         vec_arrow=(pos_tank[0]+70*math.cos(math.radians(angle)),pos_tank[1]+70*math.sin(math.radians(angle)))
         pygame.draw.line( screen, (255,255,0), pos_tank, vec_arrow,2 )
@@ -161,7 +161,11 @@ class  PyGameWindowView:
             pygame.draw.rect(screen,(255,255,0),Rect( (200,50),(model.tank2.power,20) ))    
         pygame.display.update()
         
-    def draw_win_message(self,stone_color):
+    def draw_gameover_message(self,win_determine):
+        if win_determine == 1:
+            self.screen.blit(pygame.image.load('win.png'),((self.screen.get_width() / 2) - 75, (self.screen.get_height() / 2) - 10))
+        elif win_determine == 0:
+            self.screen.blit(pygame.image.load('lose.png'),((self.screen.get_width() / 2) - 75, (self.screen.get_height() / 2) - 10))            
         pygame.display.update()
     #Restart Button
     def draw_restart_button(self):
@@ -175,9 +179,14 @@ class  PyGameWindowView:
         
     def draw_explosion(self,model,screen,explosion,x,y):
         self.draw_tank(model,screen)
-        screen.blit( explosion, (x, y) )
+        screen.blit( explosion, (x-20, y-20) )
         pygame.display.update()
         time.sleep(0.5)        
+        
+    def draw_hp_bar(self,model,screen):
+        pygame.draw.rect(screen,(255,0,0),Rect( (model.tank1.x,model.tank1.y),(int(model.tank1.hp/15),5) ))
+        pygame.draw.rect(screen,(255,0,0),Rect( (model.tank2.x,model.tank1.y),(int(model.tank1.hp/15),5) ))
+        pygame.display.update()
         
 """"""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""   Fire  action   """""""""""""""
@@ -224,16 +233,21 @@ class FireCanonMissle:
         view.draw_angle(model,screen,turn)
         view.draw_power_gauge_bar(model,screen)
         view.draw_explosion(model,screen,self.explosion,x,y)
+        view.draw_tank(model,screen)
         self.damage_cal(model,x,y)
         
     def damage_cal(self,model,x,y):
         dis_tank1=abs( math.sqrt( (x - model.tank1.x)**2 + (y - model.tank1.y)**2  ) )
         dis_tank2=abs( math.sqrt( (x - model.tank2.x)**2 + (y - model.tank2.y)**2  ) )
-        if dis_tank1 < 60:
-            model.tank1.hp = model.tank1.hp - 300 * (1.0 - dis_tank1/60.0)
-        if dis_tank2 < 60:
-            model.tank2.hp = model.tank2.hp - 300 * (1.0 - dis_tank2/60.0)    
-             
+        if dis_tank1 < 70:
+            model.tank1.hp = model.tank1.hp - 300 * (1.0 - dis_tank1/100.0)
+            if model.tank1.hp <0:
+                model.tank1.hp = 0
+            
+        if dis_tank2 < 70:
+            model.tank2.hp = model.tank2.hp - 300 * (1.0 - dis_tank2/100.0)    
+            if model.tank2.hp <0:
+                model.tank2.hp = 0
 """"""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""   Tank  action   """""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""
@@ -265,6 +279,7 @@ class PyGameKeyboardController:
                         self.model.tank1.x-=1
                     self.view.draw_tank(self.model,self.screen)
                     self.view.draw_angle(self.model,self.screen,self.user_turn)
+                    self.view.draw_hp_bar(self.model,self.screen)
                     pressed_move = pygame.key.get_pressed()[K_RIGHT] or pygame.key.get_pressed()[K_LEFT]
                     self.servercall.send_action(self.game_id, self.user_turn ,self.model.tank1.x,self.model.tank1.canon_angle,self.model.tank1.power,self.model.tank1.canon_direction)
                     time.sleep(0.001)
@@ -286,6 +301,7 @@ class PyGameKeyboardController:
                     self.view.draw_tank(self.model,self.screen)
                     self.view.draw_angle(self.model,self.screen,self.user_turn)
                     self.view.draw_power_gauge_bar(self.model,self.screen)
+                    self.view.draw_hp_bar(self.model,self.screen)
                     pressed_angle = pygame.key.get_pressed()[K_UP] or pygame.key.get_pressed()[K_DOWN]
                     self.servercall.send_action(self.game_id, self.user_turn ,self.model.tank1.x,self.model.tank1.canon_angle,self.model.tank1.power,self.model.tank1.canon_direction)
                     time.sleep(0.01)
@@ -301,6 +317,7 @@ class PyGameKeyboardController:
                         self.view.draw_tank(self.model,self.screen)
                         self.view.draw_power_gauge_bar(self.model,self.screen)
                     self.view.draw_power_gauge(self.model,self.screen,self.user_turn)
+                    self.view.draw_hp_bar(self.model,self.screen)
                     pressed_gauge = pygame.key.get_pressed()[K_SPACE]
                     time.sleep(0.005)
                 self.servercall.send_action(self.game_id, self.user_turn ,self.model.tank1.x,self.model.tank1.canon_angle,self.model.tank1.power,self.model.tank1.canon_direction)
@@ -320,6 +337,7 @@ class PyGameKeyboardController:
                         self.model.tank2.x-=1
                     self.view.draw_tank(self.model,self.screen)
                     self.view.draw_angle(self.model,self.screen,self.user_turn)
+                    self.view.draw_hp_bar(self.model,self.screen)
                     pressed_move = pygame.key.get_pressed()[K_RIGHT] or pygame.key.get_pressed()[K_LEFT]
                     self.servercall.send_action(self.game_id, self.user_turn ,self.model.tank2.x,self.model.tank2.canon_angle,self.model.tank2.power,self.model.tank2.canon_direction)
                     time.sleep(0.001)
@@ -340,6 +358,7 @@ class PyGameKeyboardController:
                     self.view.draw_tank(self.model,self.screen)
                     self.view.draw_angle(self.model,self.screen,self.user_turn)
                     self.view.draw_power_gauge_bar(self.model, self.screen)
+                    self.view.draw_hp_bar(self.model,self.screen)
                     pressed_angle = pygame.key.get_pressed()[K_UP] or pygame.key.get_pressed()[K_DOWN]
                     self.servercall.send_action(self.game_id, self.user_turn ,self.model.tank2.x,self.model.tank2.canon_angle,self.model.tank2.power,self.model.tank2.canon_direction)
                     time.sleep(0.01)
@@ -355,6 +374,7 @@ class PyGameKeyboardController:
                         self.view.draw_tank(self.model,self.screen)
                         self.view.draw_power_gauge_bar(self.model,self.screen)
                     self.view.draw_power_gauge(self.model,self.screen, self.user_turn)
+                    self.view.draw_hp_bar(self.model,self.screen)
                     pressed_gauge = pygame.key.get_pressed()[K_SPACE]
                     time.sleep(0.005)
                 self.servercall.send_action(self.game_id, self.user_turn ,self.model.tank2.x,self.model.tank2.canon_angle,self.model.tank2.power,self.model.tank2.canon_direction)                    
@@ -407,17 +427,42 @@ class Turnover:
 """"""""""""""""""""""""""""""""""""""""""""""""
 
 class Gameover:
-    def __init__(self,servercall,game_id):
+    def __init__(self,servercall,view,user_turn,game_id):
         self.servercall = servercall
+        self.view=view
+        self.user_turn = user_turn
         self.game_id = game_id
         
-    def check_gameover(self):
-        return self.servercall.check_end(self.game_id)
-        
+    def check_afk(self):
+        check = self.servercall.check_end(self.game_id)
+        if check == 'False':
+            self.view.draw_gameover_message(1)
+            return False
+        elif check == 'True':
+            return True
+
     def close_game(self):
         self.servercall.closegame(self.game_id)
-
-        
+    
+    def determine_gameover(self,model):
+        if self.user_turn == 1:
+            if model.tank1.hp <= 0:
+                self.view.draw_gameover_message(0)
+                return False
+            elif model.tank2.hp <=0:
+                self.view.draw_gameover_message(1)
+                return False
+            else:
+                return True
+        elif self.user_turn == 2:
+            if model.tank1.hp <= 0:
+                self.view.draw_gameover_message(1)
+                return False
+            elif model.tank2.hp <=0:
+                self.view.draw_gameover_message(0)
+                return False
+            else:
+                return True
 """"""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""   login screen   """""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""
@@ -527,12 +572,12 @@ if __name__ == '__main__':
     if user_id_2 == "1":
         check_game_run = True
         user_turn=2
-        Firecheck = False
+        check_game_run2 = False
     else:
         user_turn=1
         load=LoadingScreen(screen)
         load.loading()
-        Firecheck = True
+        check_game_run2 = True
         while check_user_id_2:
             user_id_2 = servercall.check_second_user(game_id)
             time.sleep(0.5)
@@ -545,6 +590,7 @@ if __name__ == '__main__':
                     check_game_run = False
                     gameover.close_game()
     
+    
     model = TankModel()
     backgroundimage=pygame.image.load('background.png')
     view=PyGameWindowView(model,screen,backgroundimage)
@@ -552,31 +598,39 @@ if __name__ == '__main__':
     view.draw_tank(model,screen)
     view.draw_power_gauge_bar(model,screen)
     turnover = Turnover(servercall,model,screen,view,user_turn,game_id)
-    gameover = Gameover(servercall,game_id)
+    gameover = Gameover(servercall,view,user_turn,game_id)
     missle = FireCanonMissle(model,screen,view)
     control=PyGameKeyboardController(servercall,model,screen,view,game_id,turnover,missle)
-    servercall.check_end(game_id)
+    Firecheck = True
     while check_game_run:
-        while Firecheck:
+        checkafk = gameover.check_afk()
+        while check_game_run2:    
+            checkafk = gameover.check_afk()
+            checkwin = gameover.determine_gameover(model)
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    Firecheck = False
+                    checkafk = False
                     check_game_run= False
-                    gameover.close_game()
                 elif event.type == pygame.KEYDOWN:
                     Firecheck=control.keyboard_event(event)
+            check_game_run2 = checkafk and checkwin and Firecheck
         time.sleep(0.1)
         turnover.move_other_tank()
+        checkwin = gameover.determine_gameover(model)
         Firecheck = turnover.turncheck(missle)
-        check_game_run = gameover.check_gameover()
+        check_game_run2 = checkafk and checkwin and Firecheck
+        check_game_run = checkafk and checkwin 
+        
         view.draw_tank(model,screen)
         view.draw_angle(model,screen,user_turn)
         view.draw_power_gauge_bar(model,screen)
+        view.draw_hp_bar(model,screen)
         for event in pygame.event.get():
             if event.type == QUIT:
                 check_game_run= False
-                gameover.close_game()
-    pygame.quit()   
-    servercall.conn.close()       
+    
+    gameover.close_game()
+    servercall.conn.close() 
+    pygame.quit()         
             
             
