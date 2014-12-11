@@ -9,7 +9,8 @@ import core
 
 server = core.init_server()
 db = server.db
-
+# DB initializing
 from models import *
 
-db.create_all()
+db.drop_all() #delete all the database in MySQL
+db.create_all() #create new database in MySQL

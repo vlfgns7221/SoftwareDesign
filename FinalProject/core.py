@@ -7,15 +7,16 @@ Created on Mon Nov 10 20:55:15 2014
 
 server = None
 
+# main server and mysql
 def init_server():
     from flask import Flask
     from flask.ext.sqlalchemy import SQLAlchemy
     
     app = Flask(__name__)
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = r'mysql://peter:0905@localhost'
+    app.config['SQLALCHEMY_DATABASE_URI'] = r'mysql://peter:0905@localhost/benjamin' # database directory
     
-    db = SQLAlchemy(app)
+    db = SQLAlchemy(app) 
     
     global server
     class ServerObject(object):
